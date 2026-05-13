@@ -6,6 +6,8 @@ import AppLayout from './components/AppLayout'
 import DashboardPage from './components/DashboardPage'
 import CategoriesPage from './components/CategoriesPage'
 
+import TransactionsPage from './components/TransactionsPage'
+
 function readStoredUser() {
   const savedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
   return savedUser ? JSON.parse(savedUser) : null
@@ -53,14 +55,13 @@ function App() {
     setPage('dashboard')
   }
 
-  /* ── Loading screen ── */
   if (isCheckingSession) {
     return (
       <main className="grid min-h-svh place-items-center bg-slate-50 px-6">
         <section className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 text-center shadow-sm">
           <p className="text-sm font-bold text-emerald-600">SmartSpend</p>
           <h1 className="mt-3 text-2xl font-extrabold text-slate-950">
-            Đang kiểm tra đăng nhập…
+            Đang kiểm tra đăng nhập...
           </h1>
           <div className="mx-auto mt-6 h-1.5 w-32 overflow-hidden rounded-full bg-slate-100">
             <div className="h-full animate-pulse rounded-full bg-emerald-500" />
@@ -70,11 +71,11 @@ function App() {
     )
   }
 
-  /* ── Auth ── */
   if (!user) {
     if (authPage === 'register') {
       return <RegisterPage onSwitchToLogin={() => setAuthPage('login')} />
     }
+
     return (
       <LoginPage
         onLogin={setUser}
@@ -83,13 +84,14 @@ function App() {
     )
   }
 
-  /* ── App ── */
   function renderPage() {
     switch (page) {
       case 'dashboard':
         return <DashboardPage />
       case 'categories':
         return <CategoriesPage />
+      case 'transactions':
+        return <TransactionsPage />
       default:
         return <DashboardPage />
     }
