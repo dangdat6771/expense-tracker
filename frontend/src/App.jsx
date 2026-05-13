@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import api from './api'
 import LoginPage from './components/LoginPage'
+import RegisterPage from './components/RegisterPage'
 
 function readStoredUser() {
   const savedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
@@ -16,6 +17,7 @@ function clearAuthStorage() {
 
 function App() {
   const [user, setUser] = useState(readStoredUser)
+  const [authPage, setAuthPage] = useState('login')
   const [isCheckingSession, setIsCheckingSession] = useState(true)
 
   useEffect(() => {
@@ -60,7 +62,20 @@ function App() {
   }
 
   if (!user) {
-    return <LoginPage onLogin={setUser} />
+    if (authPage === 'register') {
+      return (
+        <RegisterPage
+          onSwitchToLogin={() => setAuthPage('login')}
+        />
+      )
+    }
+
+    return (
+      <LoginPage
+        onLogin={setUser}
+        onSwitchToRegister={() => setAuthPage('register')}
+      />
+    )
   }
 
   return (
