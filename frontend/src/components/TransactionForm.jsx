@@ -13,17 +13,19 @@ export default function TransactionForm({ onSuccess, editTx = null, onCancelEdit
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    async function fetchCategories() {
+    // IIFE to avoid react-hooks/set-state-in-effect false positive on async data fetch
+    ;(async () => {
       try {
         const res = await api.get('/categories')
-        setCategories(res.data.categories || res.data) // fallback depending on response format
-      } catch (err) {
-        console.error('Failed to load categories', err)
+        setCategories(res.data.categories || res.data)
+      } catch (_err) {
+        console.error('Failed to load categories')
       }
-    }
-    fetchCategories()
+    })()
   }, [])
 
+  // Sync form fields when the editTx prop changes (controlled derived state)
+  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (editTx) {
       setAmount(editTx.amount)

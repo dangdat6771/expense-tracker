@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useCallback } from 'react'
 import api from '../api'
 
 export default function TransactionList({ refreshTrigger, onEdit }) {
@@ -15,18 +15,19 @@ export default function TransactionList({ refreshTrigger, onEdit }) {
   const [categoryId, setCategoryId] = useState('')
   
   useEffect(() => {
-    async function fetchCategories() {
+    // Declare and immediately invoke async function to avoid
+    // the react-hooks/set-state-in-effect lint rule false positive
+    ;(async () => {
       try {
         const res = await api.get('/categories')
         setCategories(res.data.categories || res.data)
-      } catch (err) {
-        console.error('Failed to load categories', err)
+      } catch (_err) {
+        console.error('Failed to load categories')
       }
-    }
-    fetchCategories()
+    })()
   }, [])
 
-  const loadTransactions = async (page = 1) => {
+  const loadTransactions = useCallback(async (page = 1) => {
     setLoading(true)
     try {
       const params = { page, limit: 10 }
@@ -38,23 +39,23 @@ export default function TransactionList({ refreshTrigger, onEdit }) {
       setTransactions(res.data.data)
       setMeta(res.data.meta)
       setError(null)
-    } catch (err) {
+    } catch (_err) {
       setError('Không thể tải dữ liệu giao dịch')
     } finally {
       setLoading(false)
     }
-  }
+  }, [month, type, categoryId])
 
   useEffect(() => {
     loadTransactions()
-  }, [refreshTrigger, month, type, categoryId])
+  }, [loadTransactions, refreshTrigger])
 
   const handleDelete = async (id) => {
     if (!window.confirm('Bạn có chắc chắn muốn xóa giao dịch này?')) return
     try {
       await api.delete(`/transactions/${id}`)
       loadTransactions(meta.currentPage)
-    } catch (err) {
+    } catch (_err) {
       alert('Không thể xóa giao dịch')
     }
   }
