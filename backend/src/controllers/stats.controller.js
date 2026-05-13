@@ -17,7 +17,7 @@ async function getStats(req, res, next) {
 
     if (month) {
       const [year, monthNum] = month.split("-");
-      transactionFilters += ` AND EXTRACT(YEAR FROM t.date) = $${paramIndex} AND EXTRACT(MONTH FROM t.date) = $${paramIndex + 1}`;
+      transactionFilters += ` AND EXTRACT(YEAR FROM t.created_at) = $${paramIndex} AND EXTRACT(MONTH FROM t.created_at) = $${paramIndex + 1}`;
       params.push(year, monthNum);
       paramIndex += 2;
     }
@@ -45,7 +45,8 @@ async function getStats(req, res, next) {
     `;
 
     const statsResult = await pool.query(statsQuery, params);
-    const { total_income, total_expense, total_transactions } = statsResult.rows[0];
+    const { total_income, total_expense, total_transactions } =
+      statsResult.rows[0];
     const balance = parseFloat(total_income) - parseFloat(total_expense);
 
     // Get expenses by category
@@ -87,14 +88,14 @@ async function getStats(req, res, next) {
     // Get monthly trends (last 12 months)
     const trendsQuery = `
       SELECT 
-        EXTRACT(YEAR FROM t.date)::integer AS year,
-        EXTRACT(MONTH FROM t.date)::integer AS month,
-        TO_CHAR(t.date, 'Mon') AS month_name,
+        EXTRACT(YEAR FROM t.created_at)::integer AS year,
+        EXTRACT(MONTH FROM t.created_at)::integer AS month,
+        TO_CHAR(t.created_at, 'Mon') AS month_name,
         COALESCE(SUM(CASE WHEN t.type = 'income'  THEN t.amount ELSE 0 END), 0) AS income,
         COALESCE(SUM(CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END), 0) AS expense
       FROM transactions t
       WHERE t.user_id = $1
-      GROUP BY EXTRACT(YEAR FROM t.date), EXTRACT(MONTH FROM t.date), TO_CHAR(t.date, 'Mon')
+      GROUP BY EXTRACT(YEAR FROM t.created_at), EXTRACT(MONTH FROM t.created_at), TO_CHAR(t.created_at, 'Mon')
       ORDER BY year DESC, month DESC
       LIMIT 12
     `;
@@ -104,13 +105,13 @@ async function getStats(req, res, next) {
     // Get daily transactions (last 7 days for quick view)
     const dailyQuery = `
       SELECT 
-        t.date,
+        t.created_at,
         COALESCE(SUM(CASE WHEN t.type = 'income'  THEN t.amount ELSE 0 END), 0) AS income,
         COALESCE(SUM(CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END), 0) AS expense
       FROM transactions t
-      WHERE t.user_id = $1 AND t.date >= CURRENT_DATE - INTERVAL '7 days'
-      GROUP BY t.date
-      ORDER BY t.date DESC
+      WHERE t.user_id = $1 AND t.created_at >= CURRENT_DATE - INTERVAL '7 days'
+      GROUP BY t.created_at
+      ORDER BY t.created_at DESC
     `;
 
     const dailyResult = await pool.query(dailyQuery, [userId]);

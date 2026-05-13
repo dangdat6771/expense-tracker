@@ -85,19 +85,8 @@ async function getTransactions(req, res, next) {
     const totalItems = parseInt(countResult.rows[0].count, 10);
     const totalPages = Math.ceil(totalItems / parsedLimit);
 
-    // Get Data
-    const dataQuery = `
-      SELECT t.id, t.user_id, t.category_id, c.name as category_name, c.color as category_color, 
-             t.type, t.amount, t.note, t.transaction_date, t.created_at
-      FROM transactions t
-      LEFT JOIN categories c ON t.category_id = c.id
-      WHERE t.${whereString.replace(/(\w+)\s*=/g, "t.$1 =").replace(/EXTRACT\(YEAR FROM transaction_date\)/g, "EXTRACT(YEAR FROM t.transaction_date)").replace(/EXTRACT\(MONTH FROM transaction_date\)/g, "EXTRACT(MONTH FROM t.transaction_date)")}
-      ORDER BY t.${safeSortBy} ${safeSortOrder}
-      LIMIT $${paramIndex++} OFFSET $${paramIndex++}
-    `;
-    
-    // We need to fix the parameter indices for the data query. The replace above might be messy if not careful.
-    // Let's rewrite the data query builder simpler.
+    // Rebuild the full data query with table-aliased WHERE clauses
+    // (The initial whereString is reused only for COUNT above)
     
     let dataWhereClauses = ["t.user_id = $1"];
     let dataQueryParams = [userId];

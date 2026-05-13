@@ -311,7 +311,10 @@ export default function CategoriesPage() {
     }
   }, [])
 
-  useEffect(() => { fetchCategories() }, [fetchCategories])
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    fetchCategories()
+  }, [fetchCategories])
 
   async function handleSave(form) {
     if (modal.mode === 'add') {
