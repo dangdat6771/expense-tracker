@@ -84,6 +84,70 @@ async function register(req, res, next) {
   }
 }
 
+async function login(req, res, next) {
+  try {
+    const email = normalizeEmail(req.body.email);
+    const password = String(req.body.password || "");
+
+    if (!email || !password) {
+      return res.status(400).json({
+        message: "Email and password are required",
+      });
+    }
+
+    if (!EMAIL_REGEX.test(email)) {
+      return res.status(400).json({ message: "Email is invalid" });
+    }
+
+    const userResult = await pool.query(
+      "SELECT id, name, email, password, created_at FROM users WHERE email = $1",
+      [email]
+    );
+
+    if (userResult.rowCount === 0) {
+      return res.status(401).json({ message: "Email or password is incorrect" });
+    }
+
+    const user = userResult.rows[0];
+    const isPasswordValid = await bcrypt.compare(password, user.password);
+
+    if (!isPasswordValid) {
+      return res.status(401).json({ message: "Email or password is incorrect" });
+    }
+
+    const token = signToken(user);
+
+    return res.json({
+      message: "Login successfully",
+      user: buildUserResponse(user),
+      token,
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
+async function getMe(req, res, next) {
+  try {
+    const userResult = await pool.query(
+      "SELECT id, name, email, created_at FROM users WHERE id = $1",
+      [req.user.userId]
+    );
+
+    if (userResult.rowCount === 0) {
+      return res.status(404).json({ message: "User not found" });
+    }
+
+    return res.json({
+      user: buildUserResponse(userResult.rows[0]),
+    });
+  } catch (error) {
+    return next(error);
+  }
+}
+
 module.exports = {
+  getMe,
+  login,
   register,
 };
