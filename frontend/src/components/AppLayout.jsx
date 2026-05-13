@@ -51,6 +51,7 @@ function XIcon() {
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Tổng quan', Icon: HomeIcon },
+  { id: 'transactions', label: 'Giao dịch', Icon: WalletIcon },
   { id: 'categories', label: 'Danh mục', Icon: TagIcon },
 ]
 
