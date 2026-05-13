@@ -18,16 +18,15 @@ export default function TransactionForm({ onSuccess, editTx = null, onCancelEdit
       try {
         const res = await api.get('/categories')
         setCategories(res.data.categories || res.data)
-      } catch (_err) {
-        console.error('Failed to load categories')
+      } catch (err) {
+        console.error('Failed to load categories', err)
       }
     })()
   }, [])
 
-  // Sync form fields when the editTx prop changes (controlled derived state)
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => {
     if (editTx) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setAmount(editTx.amount)
       setType(editTx.type)
       setCategoryId(editTx.category_id)

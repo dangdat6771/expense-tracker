@@ -21,8 +21,8 @@ export default function TransactionList({ refreshTrigger, onEdit }) {
       try {
         const res = await api.get('/categories')
         setCategories(res.data.categories || res.data)
-      } catch (_err) {
-        console.error('Failed to load categories')
+      } catch (err) {
+        console.error('Failed to load categories', err)
       }
     })()
   }, [])
@@ -39,7 +39,7 @@ export default function TransactionList({ refreshTrigger, onEdit }) {
       setTransactions(res.data.data)
       setMeta(res.data.meta)
       setError(null)
-    } catch (_err) {
+    } catch (_err) { // eslint-disable-line no-unused-vars
       setError('Không thể tải dữ liệu giao dịch')
     } finally {
       setLoading(false)
@@ -47,6 +47,7 @@ export default function TransactionList({ refreshTrigger, onEdit }) {
   }, [month, type, categoryId])
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     loadTransactions()
   }, [loadTransactions, refreshTrigger])
 
@@ -55,7 +56,7 @@ export default function TransactionList({ refreshTrigger, onEdit }) {
     try {
       await api.delete(`/transactions/${id}`)
       loadTransactions(meta.currentPage)
-    } catch (_err) {
+    } catch (_err) { // eslint-disable-line no-unused-vars
       alert('Không thể xóa giao dịch')
     }
   }
