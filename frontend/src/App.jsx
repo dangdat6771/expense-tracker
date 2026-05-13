@@ -1,12 +1,13 @@
 import { useEffect, useState } from 'react'
+import { Toaster } from 'sonner'
 import api from './api'
 import LoginPage from './components/LoginPage'
 import RegisterPage from './components/RegisterPage'
 import AppLayout from './components/AppLayout'
 import DashboardPage from './components/DashboardPage'
 import CategoriesPage from './components/CategoriesPage'
-
 import TransactionsPage from './components/TransactionsPage'
+import StatisticsPage from './components/StatisticsPage'
 
 function readStoredUser() {
   const savedUser = localStorage.getItem('user') || sessionStorage.getItem('user')
@@ -92,20 +93,25 @@ function App() {
         return <CategoriesPage />
       case 'transactions':
         return <TransactionsPage />
+      case 'statistics':
+        return <StatisticsPage />
       default:
         return <DashboardPage />
     }
   }
 
   return (
-    <AppLayout
-      user={user}
-      page={page}
-      onNavigate={setPage}
-      onLogout={handleLogout}
-    >
-      {renderPage()}
-    </AppLayout>
+    <>
+      <Toaster position="top-right" />
+      <AppLayout
+        user={user}
+        page={page}
+        onNavigate={setPage}
+        onLogout={handleLogout}
+      >
+        {renderPage()}
+      </AppLayout>
+    </>
   )
 }
 

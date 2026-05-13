@@ -48,11 +48,20 @@ function XIcon() {
     </svg>
   )
 }
+function ChartIcon() {
+  return (
+    <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24">
+      <path d="M3 3v18h18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+      <path d="M7 16v-4M12 16v-7M17 16v-3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+    </svg>
+  )
+}
 
 const NAV_ITEMS = [
   { id: 'dashboard', label: 'Tổng quan', Icon: HomeIcon },
   { id: 'transactions', label: 'Giao dịch', Icon: WalletIcon },
   { id: 'categories', label: 'Danh mục', Icon: TagIcon },
+  { id: 'statistics', label: 'Thống kê', Icon: ChartIcon },
 ]
 
 function NavLink({ item, active, onClick }) {
