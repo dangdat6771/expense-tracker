@@ -1,20 +1,15 @@
-import { useState } from 'react'
-import api from '../api'
+import { useState } from "react";
+import api from "../api.js";
 
 const initialForm = {
-  email: '',
-  password: '',
+  email: "",
+  password: "",
   remember: false,
-}
+};
 
 function WalletIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path
         d="M4.75 7.75A2.75 2.75 0 0 1 7.5 5h9.25A2.25 2.25 0 0 1 19 7.25v1.5"
         stroke="currentColor"
@@ -35,17 +30,12 @@ function WalletIcon() {
         strokeWidth="1.8"
       />
     </svg>
-  )
+  );
 }
 
 function MailIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path
         d="M4.75 6.75h14.5v10.5H4.75V6.75Z"
         stroke="currentColor"
@@ -59,17 +49,12 @@ function MailIcon() {
         strokeWidth="1.8"
       />
     </svg>
-  )
+  );
 }
 
 function LockIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path
         d="M7.75 10.25v-2a4.25 4.25 0 0 1 8.5 0v2"
         stroke="currentColor"
@@ -83,17 +68,12 @@ function LockIcon() {
         strokeWidth="1.8"
       />
     </svg>
-  )
+  );
 }
 
 function EyeIcon({ isVisible }) {
   return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path
         d="M4 12s2.75-5 8-5 8 5 8 5-2.75 5-8 5-8-5-8-5Z"
         stroke="currentColor"
@@ -114,17 +94,12 @@ function EyeIcon({ isVisible }) {
         />
       ) : null}
     </svg>
-  )
+  );
 }
 
 function ArrowRightIcon() {
   return (
-    <svg
-      aria-hidden="true"
-      className="h-5 w-5"
-      fill="none"
-      viewBox="0 0 24 24"
-    >
+    <svg aria-hidden="true" className="h-5 w-5" fill="none" viewBox="0 0 24 24">
       <path
         d="M5 12h14m-5-5 5 5-5 5"
         stroke="currentColor"
@@ -133,51 +108,51 @@ function ArrowRightIcon() {
         strokeWidth="1.9"
       />
     </svg>
-  )
+  );
 }
 
-function LoginPage({ onLogin }) {
-  const [form, setForm] = useState(initialForm)
-  const [showPassword, setShowPassword] = useState(false)
-  const [isSubmitting, setIsSubmitting] = useState(false)
-  const [error, setError] = useState('')
+function LoginPage({ onLogin, onSwitchToRegister }) {
+  const [form, setForm] = useState(initialForm);
+  const [showPassword, setShowPassword] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [error, setError] = useState("");
 
   function handleChange(event) {
-    const { checked, name, type, value } = event.target
+    const { checked, name, type, value } = event.target;
 
     setForm((currentForm) => ({
       ...currentForm,
-      [name]: type === 'checkbox' ? checked : value,
-    }))
+      [name]: type === "checkbox" ? checked : value,
+    }));
   }
 
   async function handleSubmit(event) {
-    event.preventDefault()
-    setError('')
-    setIsSubmitting(true)
+    event.preventDefault();
+    setError("");
+    setIsSubmitting(true);
 
     try {
-      const response = await api.post('/auth/login', {
+      const response = await api.post("/auth/login", {
         email: form.email,
         password: form.password,
-      })
+      });
 
-      const storage = form.remember ? localStorage : sessionStorage
-      localStorage.removeItem('token')
-      localStorage.removeItem('user')
-      sessionStorage.removeItem('token')
-      sessionStorage.removeItem('user')
-      storage.setItem('token', response.data.token)
-      storage.setItem('user', JSON.stringify(response.data.user))
-      onLogin(response.data.user)
-      setForm(initialForm)
+      const storage = form.remember ? localStorage : sessionStorage;
+      localStorage.removeItem("token");
+      localStorage.removeItem("user");
+      sessionStorage.removeItem("token");
+      sessionStorage.removeItem("user");
+      storage.setItem("token", response.data.token);
+      storage.setItem("user", JSON.stringify(response.data.user));
+      onLogin(response.data.user);
+      setForm(initialForm);
     } catch (requestError) {
       setError(
         requestError.response?.data?.message ||
-          'Không thể đăng nhập lúc này. Vui lòng thử lại.',
-      )
+          "Không thể đăng nhập lúc này. Vui lòng thử lại.",
+      );
     } finally {
-      setIsSubmitting(false)
+      setIsSubmitting(false);
     }
   }
 
@@ -211,9 +186,7 @@ function LoginPage({ onLogin }) {
             </p>
             <p className="text-xs font-bold text-emerald-400">+12.5%</p>
           </div>
-          <p className="mt-4 text-3xl font-extrabold text-white">
-            45.280.000đ
-          </p>
+          <p className="mt-4 text-3xl font-extrabold text-white">45.280.000đ</p>
           <div className="mt-7 h-1.5 overflow-hidden rounded-full bg-slate-700">
             <div className="h-full w-[75%] rounded-full bg-emerald-500" />
           </div>
@@ -290,11 +263,11 @@ function LoginPage({ onLogin }) {
                   onChange={handleChange}
                   placeholder="••••••••"
                   required
-                  type={showPassword ? 'text' : 'password'}
+                  type={showPassword ? "text" : "password"}
                   value={form.password}
                 />
                 <button
-                  aria-label={showPassword ? 'Ẩn mật khẩu' : 'Hiện mật khẩu'}
+                  aria-label={showPassword ? "Ẩn mật khẩu" : "Hiện mật khẩu"}
                   className="grid h-8 w-8 place-items-center rounded-md text-slate-400 hover:bg-slate-100 hover:text-slate-600"
                   onClick={() => setShowPassword((current) => !current)}
                   type="button"
@@ -326,7 +299,7 @@ function LoginPage({ onLogin }) {
               disabled={isSubmitting}
               type="submit"
             >
-              {isSubmitting ? 'Đang đăng nhập...' : 'Đăng Nhập'}
+              {isSubmitting ? "Đang đăng nhập..." : "Đăng Nhập"}
               <ArrowRightIcon />
             </button>
           </form>
@@ -361,10 +334,14 @@ function LoginPage({ onLogin }) {
           </div>
 
           <p className="mt-10 text-center text-sm text-slate-500">
-            Chưa có tài khoản?{' '}
-            <a className="font-extrabold text-emerald-600" href="#register">
+            Chưa có tài khoản?{" "}
+            <button
+              className="font-extrabold text-emerald-600 hover:underline"
+              onClick={onSwitchToRegister}
+              type="button"
+            >
               Đăng ký ngay
-            </a>
+            </button>
           </p>
         </div>
 
@@ -375,7 +352,7 @@ function LoginPage({ onLogin }) {
         </footer>
       </section>
     </main>
-  )
+  );
 }
 
-export default LoginPage
+export default LoginPage;
