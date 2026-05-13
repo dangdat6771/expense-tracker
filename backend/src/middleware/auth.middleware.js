@@ -15,7 +15,7 @@ function authenticateToken(req, res, next) {
     const jwtSecret = process.env.JWT_SECRET || "expense_tracker_dev_secret";
     req.user = jwt.verify(token, jwtSecret);
     return next();
-  } catch (error) {
+  } catch (_error) {
     return res.status(401).json({ message: "Access token is invalid" });
   }
 }

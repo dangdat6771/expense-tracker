@@ -3,7 +3,6 @@
  * All DB calls are mocked via jest.mock so no real database is needed.
  */
 const bcrypt = require("bcrypt");
-const jwt = require("jsonwebtoken");
 
 // ── Mock the DB pool ─────────────────────────────────────────────────────────
 jest.mock("../src/db", () => ({ query: jest.fn() }));

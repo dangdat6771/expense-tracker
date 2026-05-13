@@ -1,18 +1,19 @@
 /**
- * Backend ESLint flat config — Node.js environment, no browser globals.
+ * Backend ESLint flat config — Node.js / CommonJS environment.
+ * Uses .cjs extension so Node treats it as CommonJS (the backend
+ * uses require/module.exports throughout).
  */
-import js from "@eslint/js";
-import { defineConfig } from "eslint/config";
+const js = require("@eslint/js");
 
-export default defineConfig([
+module.exports = [
   {
     files: ["src/**/*.js", "tests/**/*.js"],
-    extends: [js.configs.recommended],
+    ...js.configs.recommended,
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: "commonjs",
       globals: {
-        // Node.js globals
+        // Node.js built-ins
         process: "readonly",
         require: "readonly",
         module: "writable",
@@ -33,8 +34,16 @@ export default defineConfig([
       },
     },
     rules: {
-      "no-unused-vars": ["error", { argsIgnorePattern: "^_|next" }],
+      ...js.configs.recommended.rules,
+      "no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          caughtErrorsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+        },
+      ],
       "no-console": "off",
     },
   },
-]);
+];

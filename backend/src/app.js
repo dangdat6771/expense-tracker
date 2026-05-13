@@ -26,8 +26,7 @@ app.use((req, res) => {
   res.status(404).json({ message: "Route not found" });
 });
 
-// eslint-disable-next-line no-unused-vars
-app.use((err, req, res, next) => {
+app.use((err, req, res, _next) => {
   console.error(err);
   res.status(500).json({ message: "Internal server error" });
 });
