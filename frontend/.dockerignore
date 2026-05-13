@@ -1,0 +1,9 @@
+node_modules
+npm-debug.log
+.env
+dist
+src/tests
+*.test.js
+*.test.jsx
+.gitignore
+README.md
