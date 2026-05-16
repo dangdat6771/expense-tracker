@@ -20,6 +20,6 @@ CREATE TABLE IF NOT EXISTS transactions (
   type        VARCHAR(10)  NOT NULL CHECK (type IN ('income', 'expense')),
   amount      NUMERIC(15,2) NOT NULL CHECK (amount > 0),
   note        TEXT,
-  date        DATE NOT NULL DEFAULT CURRENT_DATE,
+  transaction_date DATE NOT NULL DEFAULT CURRENT_DATE,
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
