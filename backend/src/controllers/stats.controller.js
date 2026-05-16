@@ -17,7 +17,7 @@ async function getStats(req, res, next) {
 
     if (month) {
       const [year, monthNum] = month.split("-");
-      transactionFilters += ` AND EXTRACT(YEAR FROM t.created_at) = $${paramIndex} AND EXTRACT(MONTH FROM t.created_at) = $${paramIndex + 1}`;
+      transactionFilters += ` AND EXTRACT(YEAR FROM t.transaction_date) = $${paramIndex} AND EXTRACT(MONTH FROM t.transaction_date) = $${paramIndex + 1}`;
       params.push(year, monthNum);
       paramIndex += 2;
     }
@@ -88,14 +88,14 @@ async function getStats(req, res, next) {
     // Get monthly trends (last 12 months)
     const trendsQuery = `
       SELECT 
-        EXTRACT(YEAR FROM t.created_at)::integer AS year,
-        EXTRACT(MONTH FROM t.created_at)::integer AS month,
-        TO_CHAR(t.created_at, 'Mon') AS month_name,
+        EXTRACT(YEAR FROM t.transaction_date)::integer AS year,
+        EXTRACT(MONTH FROM t.transaction_date)::integer AS month,
+        TO_CHAR(t.transaction_date, 'Mon') AS month_name,
         COALESCE(SUM(CASE WHEN t.type = 'income'  THEN t.amount ELSE 0 END), 0) AS income,
         COALESCE(SUM(CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END), 0) AS expense
       FROM transactions t
       WHERE t.user_id = $1
-      GROUP BY EXTRACT(YEAR FROM t.created_at), EXTRACT(MONTH FROM t.created_at), TO_CHAR(t.created_at, 'Mon')
+      GROUP BY EXTRACT(YEAR FROM t.transaction_date), EXTRACT(MONTH FROM t.transaction_date), TO_CHAR(t.transaction_date, 'Mon')
       ORDER BY year DESC, month DESC
       LIMIT 12
     `;
@@ -105,13 +105,13 @@ async function getStats(req, res, next) {
     // Get daily transactions (last 7 days for quick view)
     const dailyQuery = `
       SELECT 
-        t.created_at,
+        t.transaction_date AS date,
         COALESCE(SUM(CASE WHEN t.type = 'income'  THEN t.amount ELSE 0 END), 0) AS income,
         COALESCE(SUM(CASE WHEN t.type = 'expense' THEN t.amount ELSE 0 END), 0) AS expense
       FROM transactions t
-      WHERE t.user_id = $1 AND t.created_at >= CURRENT_DATE - INTERVAL '7 days'
-      GROUP BY t.created_at
-      ORDER BY t.created_at DESC
+      WHERE t.user_id = $1 AND t.transaction_date >= CURRENT_DATE - INTERVAL '7 days'
+      GROUP BY t.transaction_date
+      ORDER BY t.transaction_date DESC
     `;
 
     const dailyResult = await pool.query(dailyQuery, [userId]);
