@@ -21,4 +21,4 @@ EXPOSE 3000
 
 ENV NODE_ENV=production
 
-CMD ["node", "index.js"]
+CMD ["sh", "-c", "npm run migrate && npm start"]
