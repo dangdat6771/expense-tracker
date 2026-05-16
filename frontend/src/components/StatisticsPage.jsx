@@ -37,7 +37,13 @@ function EmptyState({ message = "No data available", icon = "📊" }) {
 function FilterIcon() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24">
-      <path d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3l-7 9v5l-2 1v-6l-7-9V4Z" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+      <path
+        d="M3 4a1 1 0 0 1 1-1h16a1 1 0 0 1 1 1v3l-7 9v5l-2 1v-6l-7-9V4Z"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
     </svg>
   );
 }
@@ -45,10 +51,28 @@ function FilterIcon() {
 function ChartIcon() {
   return (
     <svg className="h-5 w-5" fill="none" viewBox="0 0 24 24">
-      <path d="M3 3v18h18" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
-      <path d="M7 16v-4M12 16v-7M17 16v-3" stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="1.8" />
+      <path
+        d="M3 3v18h18"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
+      <path
+        d="M7 16v-4M12 16v-7M17 16v-3"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.8"
+      />
     </svg>
   );
+}
+
+function formatCurrency(value) {
+  return `$${Number(value || 0).toLocaleString("en-US", {
+    minimumFractionDigits: 2,
+  })}`;
 }
 
 export default function StatisticsPage() {
@@ -82,7 +106,8 @@ export default function StatisticsPage() {
       try {
         const params = new URLSearchParams();
         if (filters.month) params.append("month", filters.month);
-        if (filters.category_id) params.append("category_id", filters.category_id);
+        if (filters.category_id)
+          params.append("category_id", filters.category_id);
         if (filters.type) params.append("type", filters.type);
 
         const response = await api.get(`/stats?${params.toString()}`);
@@ -100,12 +125,28 @@ export default function StatisticsPage() {
   }, [filters]);
 
   function handleFilterChange(key, value) {
-    setFilters((prev) => ({ ...prev, [key]: value }));
+    setFilters((prev) => {
+      if (key !== "type") {
+        return { ...prev, [key]: value };
+      }
+
+      const selectedCategory = categories.find(
+        (category) => String(category.id) === String(prev.category_id),
+      );
+      const shouldClearCategory =
+        selectedCategory && value && selectedCategory.type !== value;
+
+      return {
+        ...prev,
+        type: value,
+        category_id: shouldClearCategory ? "" : prev.category_id,
+      };
+    });
   }
 
   function clearFilters() {
     setFilters({
-      month: new Date().toISOString().slice(0, 7),
+      month: "",
       category_id: "",
       type: "",
     });
@@ -135,6 +176,18 @@ export default function StatisticsPage() {
     "#06b6d4",
     "#0ea5e9",
   ];
+
+  const expensePieData =
+    stats?.expenses_by_category?.filter(
+      (category) => Number(category.amount) > 0,
+    ) || [];
+  const incomePieData =
+    stats?.income_by_category?.filter(
+      (category) => Number(category.amount) > 0,
+    ) || [];
+  const categoryOptions = filters.type
+    ? categories.filter((category) => category.type === filters.type)
+    : categories;
 
   return (
     <div className="space-y-6">
@@ -176,11 +229,13 @@ export default function StatisticsPage() {
             </label>
             <select
               value={filters.category_id}
-              onChange={(e) => handleFilterChange("category_id", e.target.value)}
+              onChange={(e) =>
+                handleFilterChange("category_id", e.target.value)
+              }
               className="w-full rounded-lg border border-slate-200 px-3 py-2 text-sm focus:border-emerald-500 focus:outline-none focus:ring-2 focus:ring-emerald-500/20"
             >
               <option value="">All Categories</option>
-              {categories.map((cat) => (
+              {categoryOptions.map((cat) => (
                 <option key={cat.id} value={cat.id}>
                   {cat.icon} {cat.name}
                 </option>
@@ -215,16 +270,16 @@ export default function StatisticsPage() {
 
       {/* Summary Cards */}
       {stats && (
-        <div className="grid gap-4 sm:grid-cols-3">
+        <div className="grid gap-4 md:grid-cols-3">
           {/* Total Income */}
           <div className="rounded-xl border border-emerald-200 bg-gradient-to-br from-emerald-50 to-teal-50 p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-600">Total Income</p>
-                <p className="mt-2 text-3xl font-bold text-emerald-600">
-                  ${stats.summary.total_income.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
+            <div className="flex items-center justify-between gap-4 [&>div:last-child]:shrink-0">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-600">
+                  Total Income
+                </p>
+                <p className="mt-2 break-words text-2xl font-bold leading-tight text-emerald-600 xl:text-3xl">
+                  {formatCurrency(stats.summary.total_income)}
                 </p>
               </div>
               <div className="text-4xl">📈</div>
@@ -233,13 +288,13 @@ export default function StatisticsPage() {
 
           {/* Total Expense */}
           <div className="rounded-xl border border-red-200 bg-gradient-to-br from-red-50 to-pink-50 p-6 shadow-sm">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-slate-600">Total Expense</p>
-                <p className="mt-2 text-3xl font-bold text-red-600">
-                  ${stats.summary.total_expense.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
+            <div className="flex items-center justify-between gap-4 [&>div:last-child]:shrink-0">
+              <div className="min-w-0">
+                <p className="text-sm font-medium text-slate-600">
+                  Total Expense
+                </p>
+                <p className="mt-2 break-words text-2xl font-bold leading-tight text-red-600 xl:text-3xl">
+                  {formatCurrency(stats.summary.total_expense)}
                 </p>
               </div>
               <div className="text-4xl">📉</div>
@@ -254,22 +309,22 @@ export default function StatisticsPage() {
                 : "border-orange-200 bg-gradient-to-br from-orange-50 to-red-50"
             }`}
           >
-            <div className="flex items-center justify-between">
-              <div>
+            <div className="flex items-center justify-between gap-4 [&>div:last-child]:shrink-0">
+              <div className="min-w-0">
                 <p className="text-sm font-medium text-slate-600">Balance</p>
                 <p
-                  className={`mt-2 text-3xl font-bold ${
+                  className={`mt-2 break-words text-2xl font-bold leading-tight xl:text-3xl ${
                     stats.summary.balance >= 0
                       ? "text-blue-600"
                       : "text-orange-600"
                   }`}
                 >
-                  ${stats.summary.balance.toLocaleString("en-US", {
-                    minimumFractionDigits: 2,
-                  })}
+                  {formatCurrency(stats.summary.balance)}
                 </p>
               </div>
-              <div className="text-4xl">{stats.summary.balance >= 0 ? "💰" : "⚠️"}</div>
+              <div className="text-4xl">
+                {stats.summary.balance >= 0 ? "💰" : "⚠️"}
+              </div>
             </div>
           </div>
         </div>
@@ -282,15 +337,14 @@ export default function StatisticsPage() {
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <ChartIcon />
-              <h2 className="text-lg font-semibold text-slate-900">Monthly Trends</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Monthly Trends
+              </h2>
             </div>
             <ResponsiveContainer width="100%" height={300}>
               <BarChart data={stats.monthly_trends.reverse()}>
                 <CartesianGrid strokeDasharray="3 3" />
-                <XAxis
-                  dataKey="month_name"
-                  tick={{ fontSize: 12 }}
-                />
+                <XAxis dataKey="month_name" tick={{ fontSize: 12 }} />
                 <YAxis tick={{ fontSize: 12 }} />
                 <Tooltip
                   formatter={(value) =>
@@ -313,36 +367,31 @@ export default function StatisticsPage() {
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <ChartIcon />
-                <h2 className="text-lg font-semibold text-slate-900">Expenses by Category</h2>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Expenses by Category
+                </h2>
               </div>
-              {stats.expenses_by_category.some((c) => c.amount > 0) ? (
+              {expensePieData.length > 0 ? (
                 <ResponsiveContainer width="100%" height={300}>
                   <PieChart>
                     <Pie
-                      data={stats.expenses_by_category}
+                      data={expensePieData}
                       dataKey="amount"
                       nameKey="name"
                       cx="50%"
                       cy="50%"
                       outerRadius={100}
-                      label={({ name, percent }) =>
-                        `${name} ${(percent * 100).toFixed(0)}%`
-                      }
+                      label={false}
+                      labelLine={false}
                     >
-                      {stats.expenses_by_category.map((entry, index) => (
+                      {expensePieData.map((entry, index) => (
                         <Cell
                           key={`cell-${index}`}
                           fill={entry.color || COLORS[index % COLORS.length]}
                         />
                       ))}
                     </Pie>
-                    <Tooltip
-                      formatter={(value) =>
-                        `$${value.toLocaleString("en-US", {
-                          minimumFractionDigits: 2,
-                        })}`
-                      }
-                    />
+                    <Tooltip formatter={(value) => formatCurrency(value)} />
                   </PieChart>
                 </ResponsiveContainer>
               ) : (
@@ -351,15 +400,16 @@ export default function StatisticsPage() {
               {/* Category List */}
               <div className="mt-4 space-y-2">
                 {stats.expenses_by_category.map((cat) => (
-                  <div key={cat.id} className="flex items-center justify-between text-sm">
+                  <div
+                    key={cat.id}
+                    className="flex items-center justify-between text-sm"
+                  >
                     <span className="flex items-center gap-2">
                       <span className="text-lg">{cat.icon}</span>
                       <span className="text-slate-700">{cat.name}</span>
                     </span>
                     <span className="font-medium text-slate-900">
-                      ${cat.amount.toLocaleString("en-US", {
-                        minimumFractionDigits: 2,
-                      })}
+                      {formatCurrency(cat.amount)}
                     </span>
                   </div>
                 ))}
@@ -370,52 +420,47 @@ export default function StatisticsPage() {
             <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
               <div className="flex items-center gap-2 mb-4">
                 <ChartIcon />
-                <h2 className="text-lg font-semibold text-slate-900">Income by Category</h2>
+                <h2 className="text-lg font-semibold text-slate-900">
+                  Income by Category
+                </h2>
               </div>
-              {stats.income_by_category.length > 0 &&
-              stats.income_by_category.some((c) => c.amount > 0) ? (
+              {incomePieData.length > 0 ? (
                 <>
                   <ResponsiveContainer width="100%" height={300}>
                     <PieChart>
                       <Pie
-                        data={stats.income_by_category}
+                        data={incomePieData}
                         dataKey="amount"
                         nameKey="name"
                         cx="50%"
                         cy="50%"
                         outerRadius={100}
-                        label={({ name, percent }) =>
-                          `${name} ${(percent * 100).toFixed(0)}%`
-                        }
+                        label={false}
+                        labelLine={false}
                       >
-                        {stats.income_by_category.map((entry, index) => (
+                        {incomePieData.map((entry, index) => (
                           <Cell
                             key={`cell-${index}`}
                             fill={entry.color || COLORS[index % COLORS.length]}
                           />
                         ))}
                       </Pie>
-                      <Tooltip
-                        formatter={(value) =>
-                          `$${value.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                          })}`
-                        }
-                      />
+                      <Tooltip formatter={(value) => formatCurrency(value)} />
                     </PieChart>
                   </ResponsiveContainer>
                   {/* Category List */}
                   <div className="mt-4 space-y-2">
                     {stats.income_by_category.map((cat) => (
-                      <div key={cat.id} className="flex items-center justify-between text-sm">
+                      <div
+                        key={cat.id}
+                        className="flex items-center justify-between text-sm"
+                      >
                         <span className="flex items-center gap-2">
                           <span className="text-lg">{cat.icon}</span>
                           <span className="text-slate-700">{cat.name}</span>
                         </span>
                         <span className="font-medium text-slate-900">
-                          ${cat.amount.toLocaleString("en-US", {
-                            minimumFractionDigits: 2,
-                          })}
+                          {formatCurrency(cat.amount)}
                         </span>
                       </div>
                     ))}
@@ -433,7 +478,9 @@ export default function StatisticsPage() {
           <div className="rounded-xl border border-slate-200 bg-white p-6 shadow-sm">
             <div className="flex items-center gap-2 mb-4">
               <ChartIcon />
-              <h2 className="text-lg font-semibold text-slate-900">Last 7 Days</h2>
+              <h2 className="text-lg font-semibold text-slate-900">
+                Last 7 Days
+              </h2>
             </div>
             <ResponsiveContainer width="100%" height={250}>
               <AreaChart data={stats.daily_summary.reverse()}>
